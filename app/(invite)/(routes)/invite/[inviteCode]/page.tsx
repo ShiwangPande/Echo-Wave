@@ -10,7 +10,8 @@ interface InviteCodePageProps {
 }
 
 const InviteCodePage = async ({ params }: InviteCodePageProps) => {
-  const { inviteCode } = params; 
+  const { inviteCode } = params;
+  
   const profile = await currentProfile();
   
   if (!profile) {
