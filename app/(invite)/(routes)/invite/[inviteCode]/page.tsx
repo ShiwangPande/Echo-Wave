@@ -11,12 +11,13 @@ interface InviteCodePageProps {
 
 const InviteCodePage = async ({ params }: InviteCodePageProps) => {
   const profile = await currentProfile();
-  const { inviteCode } = params;
+  const { inviteCode } = params; // No need to await params, just directly access inviteCode
+
   if (!profile) {
     return <RedirectToSignIn />;
   }
-  
-  if (!params.inviteCode) {
+
+  if (!inviteCode) {
     return redirect("/");
   }
 
@@ -49,7 +50,7 @@ const InviteCodePage = async ({ params }: InviteCodePageProps) => {
       },
     },
   });
-  
+
   if (server) {
     return redirect(`/servers/${server.id}`);
   }
@@ -58,4 +59,3 @@ const InviteCodePage = async ({ params }: InviteCodePageProps) => {
 };
 
 export default InviteCodePage;
-
