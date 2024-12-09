@@ -3,11 +3,10 @@ import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 import {v4 as uuidv4} from "uuid"
 export async function PATCH(
-    {params}:{params: Promise<{serverId: string}>}
-
+    {params}:{params: {serverId: string}}
 ){
     try{
-        const { serverId } = await params; // Await params here
+        const { serverId } = params; // Await params here
         const profile = await currentProfile();
         if(!profile){
             return new NextResponse("Unauthorized", {status:401})
