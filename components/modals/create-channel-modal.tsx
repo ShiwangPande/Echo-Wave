@@ -12,17 +12,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-
-
-
+} from "@/components/ui/select";
 import {
   Form,
   FormControl,
@@ -31,7 +27,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useParams, useRouter } from "next/navigation";
@@ -42,7 +37,7 @@ const formSchema = z.object({
   name: z.string().min(1, {
     message: "Channel Name is Required",
   }).refine(
-    name => name !== "general",
+    name => name.toLowerCase() !== "general",
     {
       message: "Channel name cannot be 'general'"
     }
@@ -55,8 +50,9 @@ export const CreateChannelModal = () => {
   const router = useRouter();
   const params = useParams();
   const isModalOpen = isOpen && type === "createChannel";
-  const {channelType} = data;
-  const form = useForm({
+  const { channelType } = data;
+
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -64,43 +60,38 @@ export const CreateChannelModal = () => {
     },
   });
 
-  useEffect(()=>{
-    if(channelType){
-      form.setValue("type", channelType);
-    } else {
-      form.setValue("type", ChannelType.TEXT)
-    }
-  }, [channelType, form])
+  useEffect(() => {
+    form.setValue("type", channelType || ChannelType.TEXT);
+  }, [channelType, form, form.setValue]);
 
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const { serverId } = await params;
+      if (!params || typeof params.serverId !== 'string') {
+        throw new Error("Server ID is missing");
+      }
+
       const url = qs.stringifyUrl({
         url: "/api/channels",
-        query: {
-          serverId: serverId
-        }
-      })
-
+        query: { serverId: params.serverId }
+      });
 
       await axios.post(url, values);
       form.reset();
       router.refresh();
       onClose();
     } catch (error) {
-      console.log(error);
+      console.error("Channel creation error:", error);
     }
   };
 
   const handleClose = () => {
     form.reset();
     onClose();
-  }
+  };
 
   return (
-
     <Dialog open={isModalOpen} onOpenChange={handleClose}>
       <DialogContent className="bg-white text-black p-0 overflow-hidden">
         <DialogHeader className="pt-8 px-6">
@@ -137,17 +128,24 @@ export const CreateChannelModal = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Channel type</FormLabel>
-                    <Select disabled={isLoading} onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select 
+                      disabled={isLoading} 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
                       <SelectTrigger className="bg-zinc-300/50 border-0 focus:ring-0 text-black ring-offset-0 capitalize outline-none">
                         <SelectValue placeholder="Select a channel type" />
                       </SelectTrigger>
                       <SelectContent>
                         {Object.values(ChannelType).map((type) => (
-                          <SelectItem key={type} value={type} className="capitalize">
-                            {type.toLocaleLowerCase()}
+                          <SelectItem 
+                            key={type} 
+                            value={type} 
+                            className="capitalize"
+                          >
+                            {type.toLowerCase()}
                           </SelectItem>
                         ))}
-
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -156,7 +154,11 @@ export const CreateChannelModal = () => {
               />
             </div>
             <DialogFooter className="bg-gray-100 px-6 py-4">
-              <Button type="submit" disabled={isLoading} variant="primary">
+              <Button 
+                type="submit" 
+                disabled={isLoading} 
+                variant="primary"
+              >
                 Create
               </Button>
             </DialogFooter>
@@ -164,6 +166,5 @@ export const CreateChannelModal = () => {
         </Form>
       </DialogContent>
     </Dialog>
-
   );
 };
