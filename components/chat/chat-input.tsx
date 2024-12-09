@@ -94,7 +94,7 @@ const ChatInput = ({
                                     <button
                                             type="submit"
                                             disabled={isLoading}
-                                             className="absolute top-7 right-8 h-[25px] w-[25px] bg-zinc-500 dark:bg-zinc-400 hover:bg-zinc-600 dark:hover:bg-zinc-300 transition rounded-full p-1 flex items-center justify-center"
+                                             className="absolute top-7 right-8 h-[26px] w-[26px] bg-zinc-500 dark:bg-zinc-400 hover:bg-zinc-600 dark:hover:bg-zinc-300 transition rounded-full p-1 flex items-center justify-center"
                                          
                                         >
                                            <SendHorizontal    className="text-white dark:text-[#313338]" />
