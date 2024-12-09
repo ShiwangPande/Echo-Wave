@@ -20,7 +20,7 @@ export default clerkMiddleware(async (auth, request) => {
   signUpUrl: '/sign-up',  // Redirect to this URL if unauthenticated
   afterSignInUrl: '/',  // Redirect here after successful sign-in
   afterSignUpUrl: '/',  // Redirect here after successful sign-up
-  isSatellite: false,  // Optional setting for Satellite environment
+  isSatellite: false,  
 });
 
 export const config = {
