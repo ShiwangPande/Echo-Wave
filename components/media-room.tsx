@@ -62,9 +62,11 @@ export const MediaRoom = ({ chatId, video, audio }: MediaRoomProps) => {
       <MyVideoConference video={video} audio={audio} />
 
 
-      {audio && !video && <RoomAudioRenderer style={{ height: '100vh', width: '100%' }} />}
-
-
+      {audio && !video && (
+  <div style={{ height: '100vh', width: '100%' }}>
+    <RoomAudioRenderer />
+  </div>
+)}
       {video && <ControlBar />}
     </LiveKitRoom>
   );
