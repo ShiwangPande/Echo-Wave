@@ -4,26 +4,31 @@ import { RedirectToSignIn } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
 interface InviteCodePageProps {
-  params: {
-    inviteCode: string;
-  };
+  params: Promise<{ inviteCode: string }>;
 }
 
 const InviteCodePage = async ({ params }: InviteCodePageProps) => {
-  
+  // Await params to resolve the promise
+  const resolvedParams = await params;
+
+  // Fetch the current profile
   const profile = await currentProfile();
-  
+
+  // If the user is not signed in, redirect to sign-in page
   if (!profile) {
     return <RedirectToSignIn />;
   }
-  
-  if (!params.inviteCode) {
-    return redirect("/");
+
+  // If no invite code is provided, redirect to the homepage
+  if (!resolvedParams?.inviteCode) {
+    redirect("/");
+    return null;
   }
 
+  // Check if the server exists with the invite code and the profile is already a member
   const existingServer = await db.server.findFirst({
     where: {
-      inviteCode: params.inviteCode,
+      inviteCode: resolvedParams.inviteCode,
       members: {
         some: {
           profileId: profile.id,
@@ -32,13 +37,16 @@ const InviteCodePage = async ({ params }: InviteCodePageProps) => {
     },
   });
 
+  // If the profile is already a member, redirect to the server page
   if (existingServer) {
-    return redirect(`/servers/${existingServer.id}`);
+    redirect(`/servers/${existingServer.id}`);
+    return null;
   }
 
+  // Otherwise, add the profile to the server using the invite code
   const server = await db.server.update({
     where: {
-      inviteCode: params.inviteCode,
+      inviteCode: resolvedParams.inviteCode,
     },
     data: {
       members: {
@@ -50,11 +58,14 @@ const InviteCodePage = async ({ params }: InviteCodePageProps) => {
       },
     },
   });
-  
+
+  // Redirect to the server page after adding the member
   if (server) {
-    return redirect(`/servers/${server.id}`);
+    redirect(`/servers/${server.id}`);
+    return null;
   }
 
+  // Fallback return for edge cases
   return null;
 };
 
