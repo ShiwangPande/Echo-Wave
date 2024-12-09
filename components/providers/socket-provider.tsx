@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { io as ClientIO, Socket } from "socket.io-client";
 
 type SocketContextType = {
-  socket: Socket | null; // Replace `any` with `Socket` type
+  socket: Socket | null;
   isConnected: boolean;
 };
 
