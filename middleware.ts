@@ -15,7 +15,7 @@ export default clerkMiddleware(async (auth, request) => {
 }, {
   publishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   secretKey: process.env.CLERK_SECRET_KEY,
-  domain: 'your_domain',  // Example: 'clerk.dev'
+  domain: 'https://echo-wave-pied.vercel.app',  // Example: 'clerk.dev'
   signInUrl: '/sign-in',  // Redirect to this URL if unauthenticated
   signUpUrl: '/sign-up',  // Redirect to this URL if unauthenticated
   afterSignInUrl: '/',  // Redirect here after successful sign-in
