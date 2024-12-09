@@ -1,7 +1,7 @@
 import ChatHeader from "@/components/chat/chat-header";
 import ChatInput from "@/components/chat/chat-input";
 import ChatMessages from "@/components/chat/chat-messages";
-import  {MediaRoom}  from "@/components/media-room";
+import { MediaRoom } from "@/components/media-room";
 import { currentProfile } from "@/lib/current-profile";
 import { db } from "@/lib/db";
 import { RedirectToSignIn } from "@clerk/nextjs";
@@ -9,15 +9,16 @@ import { ChannelType } from "@prisma/client";
 import { redirect } from "next/navigation";
 
 interface ChannelIdPageProps {
-  params: {
+  params: Promise<{
     serverId: string;
     channelId: string;
-  };
+  }>;
 }
 
 const ChannelIdPage = async ({ params }: ChannelIdPageProps) => {
   const profile = await currentProfile();
-  const { channelId, serverId } = await params;
+  const { channelId, serverId } = await params; // Await params as it is a Promise
+
   if (!profile) {
     return <RedirectToSignIn />;
   }
@@ -73,18 +74,10 @@ const ChannelIdPage = async ({ params }: ChannelIdPageProps) => {
         </>
       )}
       {channel.type === ChannelType.AUDIO && (
-        <MediaRoom
-        chatId={channel.id}
-        video={false}
-        audio={true}
-        />
+        <MediaRoom chatId={channel.id} video={false} audio={true} />
       )}
       {channel.type === ChannelType.VIDEO && (
-        <MediaRoom
-        chatId={channel.id}
-        video={true}
-        audio={true}
-        />
+        <MediaRoom chatId={channel.id} video={true} audio={true} />
       )}
     </div>
   );
