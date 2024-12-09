@@ -14,7 +14,13 @@ export const initialProfile = async ()=>{
             userId: user.id
         }
     });
+    const email = user.emailAddresses?.[0]?.emailAddress;
 
+    // If no email exists, handle the case (you could throw an error or return a default profile)
+    if (!email) {
+      throw new Error("User does not have a valid email address.");
+    }
+  
     if(profile){
         return profile;
     }
@@ -24,7 +30,7 @@ export const initialProfile = async ()=>{
             userId: user.id,
             name: `${user.firstName} ${user.lastName}`,
             imageUrl: user.imageUrl,
-            email: user.emailAddresses[0].emailAddress
+            email: email
         }
     });
 
