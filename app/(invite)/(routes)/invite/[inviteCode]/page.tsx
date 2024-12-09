@@ -4,20 +4,16 @@ import { RedirectToSignIn } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
 interface InviteCodePageProps {
-  params: {
-    inviteCode: string;
-  };
+  inviteCode: string;
 }
 
-const InviteCodePage = async ({ params }: InviteCodePageProps) => {
-  const { inviteCode } = params;
-  
+const InviteCodePage = async ({ inviteCode }: InviteCodePageProps) => {
   const profile = await currentProfile();
-  
+
   if (!profile) {
     return <RedirectToSignIn />;
   }
-  
+
   if (!inviteCode) {
     return redirect("/");
   }
@@ -51,7 +47,7 @@ const InviteCodePage = async ({ params }: InviteCodePageProps) => {
       },
     },
   });
-  
+
   if (server) {
     return redirect(`/servers/${server.id}`);
   }
