@@ -2,7 +2,7 @@ import { currentProfile } from "@/lib/current-profile";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function DELETE(req:Request, {params}:{params:{serverId:string}}) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ serverId: string }> }) {
     try{
         const { serverId } = await params;
         const profile = await currentProfile();
@@ -15,7 +15,8 @@ export async function DELETE(req:Request, {params}:{params:{serverId:string}}) {
                 profileId: profile.id
             }
         })
-
+        const requestBody = await req.json(); // If the body contains JSON
+        console.log("Request Body:", requestBody);
         return NextResponse.json(server);
     }catch(error){
         console.log("[SERVER_ID_DELETE]", error);
@@ -23,7 +24,7 @@ export async function DELETE(req:Request, {params}:{params:{serverId:string}}) {
     }
 }
 
-export async function PATCH(req:Request, {params}:{params:{serverId:string}}) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ serverId: string }> }) {
     try{
         const { serverId } = await params;
         const profile = await currentProfile();
