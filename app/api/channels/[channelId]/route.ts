@@ -55,10 +55,10 @@ export async function DELETE(
 }
 export async function PATCH(
     req: Request,
-    {params}: {params: {channelId: string}}
+    context: { params: { channelId: string } }
 ) {
     try {
-        const { channelId } = await params;
+        const { channelId } = context.params; 
         const profile = await currentProfile();
         const {name, type} = await req.json();
         const {searchParams} = new URL(req.url);
