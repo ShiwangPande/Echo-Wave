@@ -4,14 +4,13 @@ import { RedirectToSignIn } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
 interface InviteCodePageProps {
-  params: Promise<{
+  params: {
     inviteCode: string;
-  }>;
+  };
 }
 
 const InviteCodePage = async ({ params }: InviteCodePageProps) => {
-  const resolvedParams = await params;
-  const { inviteCode } = resolvedParams;
+  const { inviteCode } = params;
   
   const profile = await currentProfile();
   

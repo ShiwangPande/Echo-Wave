@@ -71,15 +71,6 @@ export const MediaRoom = ({ chatId, video , audio  }: MediaRoomProps) => {
 
       <RoomAudioRenderer />
       <ControlBar
-  variation="verbose"
-  controls={{
-    microphone: true,
-    camera: true,
-    chat: true,
-    screenShare: true,
-    leave: true,
-  }}
-  onDeviceError={(error) => console.error('Device error:', error)}
 />
 
     </LiveKitRoom>
