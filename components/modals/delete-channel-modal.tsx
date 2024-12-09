@@ -1,5 +1,6 @@
 "use client";
 import * as z from "zod";
+import qs from "query-string";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import axios from "axios";
@@ -25,15 +26,16 @@ import { useRouter } from "next/navigation";
 import { useModal } from "@/hooks/use-modal-store";
 import { useState } from "react";
 
-export const DeleteServerModal = () => {
+export const DeleteChannelModal = () => {
   const { isOpen, onClose, type, data } = useModal();
   const router = useRouter();
+
   const [isLoading, setIsLoading] = useState(false);
-  const isModalOpen = isOpen && type === "deleteServer";
-  const { server } = data;
+  const isModalOpen = isOpen && type === "deleteChannel";
+  const { server, channel } = data;
 
   // Capture the server name
-  const serverName = server?.name || "";
+  const channelName = channel?.name || "";
 
   // Define schema with server name validation
   const formSchema = z.object({
@@ -42,8 +44,8 @@ export const DeleteServerModal = () => {
       .min(1, {
         message: "Channel Name is Required",
       })
-      .refine((name) => name === serverName, {
-        message: `Channel name must match "${serverName}" exactly.`,
+      .refine((name) => name === channelName, {
+        message: `Channel name must match "${channelName}" exactly.`,
       }),
   });
 
@@ -57,10 +59,17 @@ export const DeleteServerModal = () => {
   const onSubmit = async () => {
     try {
       setIsLoading(true);
-      await axios.delete(`/api/servers/${server?.id}`);
+      const url = qs.stringifyUrl({
+        url: `/api/channels/${channel?.id}`, 
+        query: {
+          serverId: server?.id,
+        }
+      })
+      await axios.delete(url);
       onClose();
+      // router.refresh();
+      router.push(`/servers/${server?.id}`);
       router.refresh();
-      router.push("/");
     } catch (error) {
       console.log(error);
     } finally {
@@ -72,16 +81,17 @@ export const DeleteServerModal = () => {
     form.reset();
     setIsLoading(false);
     onClose();
+    router.push(`/servers/${server?.id}`);
   };
 
   return (
     <Dialog open={isModalOpen} onOpenChange={handleClose}>
       <DialogContent className="bg-white text-black p-0 overflow-hidden">
         <DialogHeader className="pt-8 px-6">
-          <DialogTitle className="text-2xl text-center">Leave Server</DialogTitle>
+          <DialogTitle className="text-2xl text-center">Delete Channel</DialogTitle>
           <DialogDescription className="text-center text-zinc-500">
-            Are you sure you want to leave this server? <br />{" "}
-            <span className="font-semibold text-indigo-500 select-none">{serverName}</span>{" "}
+            Are you sure you want to Delete this Channel? <br />{" "}
+            <span className="font-semibold text-indigo-500 select-none">#{channelName}</span>{" "}
             will be permanently deleted.
           </DialogDescription>
         </DialogHeader>
@@ -94,7 +104,7 @@ export const DeleteServerModal = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className=" text-xs font-bold text-zinc-500 dark:text-secondary/70">
-                      Type &quot;{serverName}&quot; to confirm your action.
+                      Type &quot;{channelName}&quot; to confirm your action.
                     </FormLabel>
                     <FormControl>
                       <Input
