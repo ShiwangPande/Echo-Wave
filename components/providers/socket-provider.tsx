@@ -18,7 +18,6 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    // Validate environment variable
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
     const socketPath = "/api/socket/io";
 
@@ -27,77 +26,60 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // Determine protocol based on site URL
-    const protocol = siteUrl.startsWith('https') ? 'wss' : 'ws';
-    const fullSocketUrl = `${protocol}://${new URL(siteUrl).hostname}`;
+    // Construct socket URL dynamically
+    const socketUrl = new URL(siteUrl);
+    const protocol = socketUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+    const fullSocketUrl = `${protocol}//${socketUrl.hostname}${socketUrl.port ? `:${socketUrl.port}` : ''}`;
 
     try {
       const socketInstance = ClientIO(fullSocketUrl, {
         path: socketPath,
-        transports: ["websocket"], // Force websocket
+        transports: ["websocket"],
         forceNew: true,
         reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000,
-        timeout: 10000,
+        reconnectionAttempts: 3,
+        reconnectionDelay: 2000,
+        timeout: 5000,
         withCredentials: true,
-        extraHeaders: {
-          'Access-Control-Allow-Origin': '*'
-        }
       });
 
       setSocket(socketInstance);
 
-      socketInstance.on("connect", () => {
+      const connectHandler = () => {
         console.log("Socket connected successfully");
         setIsConnected(true);
-      });
+      };
 
-      socketInstance.on("disconnect", (reason) => {
-        console.log("Socket disconnected:", reason);
+      const disconnectHandler = (reason: string) => {
+        console.warn("Socket disconnected:", reason);
         setIsConnected(false);
 
-        // Attempt to reconnect if disconnected due to server issues
-        if (reason === "io server disconnect") {
-          socketInstance.connect();
+        if (reason === "io server disconnect" || reason === "transport close") {
+          setTimeout(() => socketInstance.connect(), 3000);
         }
-      });
+      };
 
-      socketInstance.on("connect_error", (error) => {
-        console.error("Detailed Socket Connection Error:", {
-          fullError: error,
-          name: error.name,
-          message: error.message,
-          stack: error.stack
+      const connectErrorHandler = (error: any) => {
+        console.error("Socket Connection Error:", {
+          name: error?.name,
+          message: error?.message,
+          type: typeof error,
         });
+      };
 
-        // Additional detailed logging
-        if (error instanceof Error) {
-          console.error("Error Details:", {
-            type: typeof error,
-            properties: Object.keys(error),
-            prototype: Object.getPrototypeOf(error)
-          });
-        }
-      });
-
-      socketInstance.io.on("error", (error) => {
-        console.error("Socket.IO Core Error:", error);
-      });
-
-      socketInstance.on("reconnect", (attemptNumber) => {
-        console.log(`Reconnected to socket after ${attemptNumber} attempts`);
-      });
-
-      socketInstance.on("reconnect_error", (error) => {
-        console.error("Reconnection Error:", error);
-      });
+      socketInstance.on("connect", connectHandler);
+      socketInstance.on("disconnect", disconnectHandler);
+      socketInstance.on("connect_error", connectErrorHandler);
+      socketInstance.io.on("error", connectErrorHandler);
 
       return () => {
+        socketInstance.off("connect", connectHandler);
+        socketInstance.off("disconnect", disconnectHandler);
+        socketInstance.off("connect_error", connectErrorHandler);
         socketInstance.disconnect();
       };
     } catch (error) {
-      console.error("Failed to initialize socket:", error);
+      console.error("Socket Initialization Failed:", error);
     }
   }, []);
 
@@ -108,6 +90,4 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const useSocket = () => {
-  return useContext(SocketContext);
-};
+export const useSocket = () => useContext(SocketContext);
