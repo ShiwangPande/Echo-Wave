@@ -18,10 +18,17 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    const socketInstance = new (ClientIO as any) (process.env.NEXT_PUBLIC_SITE_URL!, {
-        path: "/api/socket/io",
-        addTrailingSlash: false
-    })
+    if (!process.env.NEXT_PUBLIC_SITE_URL) {
+      console.error("NEXT_PUBLIC_SITE_URL is not defined");
+      return;
+    }
+
+    const socketInstance = ClientIO(process.env.NEXT_PUBLIC_SITE_URL, {
+      path: "/api/socket/io",
+      transports: ["websocket", "polling"], // Ensure fallback for older browsers
+      withCredentials: true, // Allow cookies to be sent
+    });
+
     setSocket(socketInstance);
 
     socketInstance.on("connect", () => {
@@ -30,6 +37,11 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     socketInstance.on("disconnect", () => {
       setIsConnected(false);
+    });
+
+    // Handle any errors
+    socketInstance.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
     });
 
     return () => {
