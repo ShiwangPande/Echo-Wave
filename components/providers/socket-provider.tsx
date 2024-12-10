@@ -18,35 +18,65 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_SITE_URL) {
-      console.error("NEXT_PUBLIC_SITE_URL is not defined");
+    // Validate environment variable
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    const socketPath = "/api/socket/io";
+
+    if (!siteUrl) {
+      console.error("[NEXT_PUBLIC_SITE_URL] is not defined");
       return;
     }
 
-    const socketInstance = ClientIO(process.env.NEXT_PUBLIC_SITE_URL, {
-      path: "/api/socket/io",
-      transports: ["websocket", "polling"], // Ensure fallback for older browsers
-      withCredentials: true, // Allow cookies to be sent
-    });
+    try {
+      const socketInstance = ClientIO(siteUrl, {
+        path: socketPath,
+        transports: ["websocket", "polling"],
+        withCredentials: true,
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        timeout: 5000
+      });
 
-    setSocket(socketInstance);
+      setSocket(socketInstance);
 
-    socketInstance.on("connect", () => {
-      setIsConnected(true);
-    });
+      socketInstance.on("connect", () => {
+        console.log("Socket connected successfully");
+        setIsConnected(true);
+      });
 
-    socketInstance.on("disconnect", () => {
-      setIsConnected(false);
-    });
+      socketInstance.on("disconnect", (reason) => {
+        console.log("Socket disconnected:", reason);
+        setIsConnected(false);
 
-    // Handle any errors
-    socketInstance.on("connect_error", (error) => {
-      console.error("Socket connection error:", error);
-    });
+        // Attempt to reconnect if disconnected due to server issues
+        if (reason === "io server disconnect") {
+          socketInstance.connect();
+        }
+      });
 
-    return () => {
-      socketInstance.close();
-    };
+      socketInstance.on("connect_error", (error) => {
+        console.error("Detailed Socket Connection Error:", {
+          name: error.name,
+          message: error.message,
+          description: error.cause
+        });
+      });
+
+      socketInstance.on("reconnect", (attemptNumber) => {
+        console.log(`Reconnected to socket after ${attemptNumber} attempts`);
+      });
+
+      socketInstance.on("reconnect_error", (error) => {
+        console.error("Reconnection Error:", error);
+      });
+
+      return () => {
+        socketInstance.disconnect();
+      };
+    } catch (error) {
+      console.error("Failed to initialize socket:", error);
+    }
   }, []);
 
   return (
