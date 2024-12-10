@@ -16,7 +16,8 @@ const font = Open_Sans({
 
 export const metadata: Metadata = {
   title: "Echo Wave App",
-  description: "Used to communicate just like discord",
+  description: "Echo Wave: A next-gen communication platform built for seamless collaboration, vibrant communities, and dynamic conversations. Experience communication redefined!",
+
 };
 
 export default function RootLayout({
@@ -28,6 +29,13 @@ export default function RootLayout({
     <ClerkProvider
      >
       <html lang="en" suppressHydrationWarning>
+        <head>
+        <link
+            rel="icon"
+            href="/favicon.ico" 
+            type="image/x-icon"
+          />
+        </head>
         <body
           className={cn(font.className, "bg-white dark:bg-[#313338]")}
         >
