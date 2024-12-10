@@ -1,33 +1,30 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-// Create a matcher for public routes (e.g., sign-in, sign-up, upload, etc.)
+// Define public routes
 const isPublicRoute = createRouteMatcher([
-  '/sign-in(.*)', 
-  '/sign-up(.*)', 
+  '/sign-in(.*)',
+  '/sign-up(.*)',
   '/api/uploadthing',
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
-  // Check if the request URL matches any public route
   if (isPublicRoute(request)) {
-    return; // Allow public routes without requiring authentication
+    return; // Allow access to public routes
   }
 
-  // Protect private routes (non-public routes)
   try {
-    await auth.protect(); // This ensures the user is authenticated
+    await auth.protect(); // Authenticate users for private routes
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
-    // Handle unauthorized access or redirection for unauthenticated users
-    return new Response('Unauthorized', { status: 401 });
+    // Redirect unauthenticated users to sign-in
+    const redirectUrl = `${process.env.NEXT_PUBLIC_CLERK_FRONTEND_API}/sign-in?redirect_url=${request.url}`;
+    return Response.redirect(redirectUrl, 302);
   }
 });
 
 export const config = {
   matcher: [
-    // Match all routes except static assets and files
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
     '/(api|trpc)(.*)',
   ],
 };
