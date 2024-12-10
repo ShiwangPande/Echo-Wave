@@ -7,19 +7,14 @@ const isPublicRoute = createRouteMatcher([
   '/api/uploadthing',
 ]);
 
-export default clerkMiddleware(async (auth, request) => {
+export default clerkMiddleware((auth, request) => {
+  // If it's a public route, allow access
   if (isPublicRoute(request)) {
-    return; // Allow access to public routes
+    return;
   }
 
-  try {
-    await auth.protect(); // Authenticate users for private routes
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
-    // Redirect unauthenticated users to sign-in
-    const redirectUrl = `${process.env.NEXT_PUBLIC_CLERK_FRONTEND_API}/sign-in?redirect_url=${request.url}`;
-    return Response.redirect(redirectUrl, 302);
-  }
+  // Protect private routes
+  auth.protect();
 });
 
 export const config = {
