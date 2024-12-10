@@ -21,7 +21,6 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Comprehensive URL and connection debugging
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
     const socketPath = "/api/socket/io";
 
@@ -31,45 +30,33 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // Detailed URL parsing
     const parseUrl = new URL(siteUrl);
     const protocol = parseUrl.protocol === 'https:' ? 'wss:' : 'ws:';
     const hostname = parseUrl.hostname;
     const port = parseUrl.port ? `:${parseUrl.port}` : '';
 
-    // Full socket URL construction with explicit logging
-    const fullSocketUrl = `${protocol}//${hostname}${port}`;
-    
+    const fullSocketUrl = `${protocol}//${hostname}${port}${socketPath}`;
+
     console.log("🔍 Socket Connection Details:", {
       fullSocketUrl,
       socketPath,
-      parsedDetails: {
-        protocol,
-        hostname,
-        port: port || 'default'
-      }
+      parsedDetails: { protocol, hostname, port: port || 'default' },
     });
 
     try {
       const socketInstance = ClientIO(fullSocketUrl, {
-        path: socketPath,
         transports: ["websocket"],
-        
-        // Aggressive connection parameters
         forceNew: true,
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
         timeout: 15000,
-        
-        // CORS and credential handling
         withCredentials: false,
         extraHeaders: {
-          'Origin': siteUrl
-        }
+          'Origin': siteUrl,
+        },
       });
 
-      // Extensive event logging
       socketInstance.on("connect", () => {
         console.log("🟢 Socket Connected Successfully");
         setIsConnected(true);
@@ -77,12 +64,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       socketInstance.on("connect_error", (error: any) => {
-        console.error("❌ Detailed Connection Error:", {
-          errorName: error.name,
-          errorMessage: error.message,
-          errorType: typeof error,
-          fullError: error
-        });
+        console.error("❌ Detailed Connection Error:", error);
         setConnectionError(error.message || "Unknown connection error");
       });
 
