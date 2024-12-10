@@ -27,15 +27,23 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
+    // Determine protocol based on site URL
+    const protocol = siteUrl.startsWith('https') ? 'wss' : 'ws';
+    const fullSocketUrl = `${protocol}://${new URL(siteUrl).hostname}`;
+
     try {
-      const socketInstance = ClientIO(siteUrl, {
+      const socketInstance = ClientIO(fullSocketUrl, {
         path: socketPath,
-        transports: ["websocket", "polling"],
-        withCredentials: true,
+        transports: ["websocket"], // Force websocket
+        forceNew: true,
         reconnection: true,
         reconnectionAttempts: 5,
         reconnectionDelay: 1000,
-        timeout: 5000
+        timeout: 10000,
+        withCredentials: true,
+        extraHeaders: {
+          'Access-Control-Allow-Origin': '*'
+        }
       });
 
       setSocket(socketInstance);
@@ -57,10 +65,24 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
       socketInstance.on("connect_error", (error) => {
         console.error("Detailed Socket Connection Error:", {
+          fullError: error,
           name: error.name,
           message: error.message,
-          description: error.cause
+          stack: error.stack
         });
+
+        // Additional detailed logging
+        if (error instanceof Error) {
+          console.error("Error Details:", {
+            type: typeof error,
+            properties: Object.keys(error),
+            prototype: Object.getPrototypeOf(error)
+          });
+        }
+      });
+
+      socketInstance.io.on("error", (error) => {
+        console.error("Socket.IO Core Error:", error);
       });
 
       socketInstance.on("reconnect", (attemptNumber) => {
