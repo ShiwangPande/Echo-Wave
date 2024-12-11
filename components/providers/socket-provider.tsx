@@ -21,7 +21,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     // Initialize the socket connection
-    const socketInstance = io('https://echowave.shiwang.tech', {
+    const socketInstance = io(process.env.NEXT_PUBLIC_SITE_URL, {
       path: '/api/socket/io', // Ensure path is correctly configured
       addTrailingSlash: false, // Avoid appending trailing slash
     });
