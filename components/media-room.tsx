@@ -27,11 +27,12 @@ export const MediaRoom = ({ chatId, video, audio }: MediaRoomProps) => {
   useEffect(() => {
     if (!user?.firstName || !user?.lastName) return;
 
-    const name = `${user.firstName} ${user.lastName}`;
+    const name = `${user.firstName}_${user.lastName}`;
 
     (async () => {
       try {
         const resp = await fetch(`/api/token?room=${chatId}&username=${name}`);
+        console.log(resp)
         const data = await resp.json();
         setToken(data.token);
       } catch (e) {
