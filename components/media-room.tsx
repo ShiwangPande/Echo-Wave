@@ -57,6 +57,7 @@ export const MediaRoom = ({ chatId, video, audio }: MediaRoomProps) => {
       token={token}
       serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
       data-lk-theme="default"
+      onDisconnected={()=>setToken("")}
       style={{ height: '100vh', width: '100%' }}
     >
   
