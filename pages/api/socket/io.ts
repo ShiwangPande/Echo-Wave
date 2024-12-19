@@ -16,7 +16,7 @@ const ioHandler = (_req: NextApiRequest, res: NextApiResponseServerIo) => {
     const httpServer: NetServer = res.socket.server as any;
     const io = new ServerIO(httpServer, {
       path: path,
-      transports: ['websocket', 'polling'],
+      transports: ['websocket'],
       addTrailingSlash: false,
       cors: {
         origin: "*", // Allow all origins
