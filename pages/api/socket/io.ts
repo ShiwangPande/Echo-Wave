@@ -18,6 +18,11 @@ const ioHandler = (_req: NextApiRequest, res: NextApiResponseServerIo) => {
       path: path,
       transports: ['websocket', 'polling'],
       addTrailingSlash: false,
+      cors: {
+        origin: "*", // Allow all origins
+        methods: ["GET", "POST"], // Allow GET and POST methods
+        allowedHeaders: ["Content-Type"], // Specify any allowed headers
+      },
     });
     res.socket.server.io = io;
   }
